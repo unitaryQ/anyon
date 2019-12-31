@@ -1,0 +1,10 @@
+#all .o files
+.o
+.1
+
+#built files
+core
+bootloader
+
+#image
+*.img

@@ -1,0 +1,21 @@
+#ram config
+megs: 128
+romimage: file=/home/hatikvah/bochs-2.6.10/share/bochs/BIOS-bochs-latest
+vgaromimage: file=/home/hatikvah/bochs-2.6.10/share/bochs/VGABIOS-lgpl-latest
+
+#boot media
+boot:disk
+
+#output log 
+log: /home/hatikvah/bochs-2.6.10/bochs.out
+
+#input device
+mouse: enabled=0
+keyboard: keymap=/home/hatikvah/bochs-2.6.10/share/bochs/keymaps/x11-pc-us.map
+
+#hard disk
+ata0: enabled=1,ioaddr1=0x1f0,ioaddr2=0x3f0, irq=14
+ata0-master: type=disk, path="/home/hatikvah/anyon/anyon.img", mode=flat
+
+#clock
+clock: sync=realtime
