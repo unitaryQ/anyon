@@ -7,8 +7,8 @@
 #include <keyboard.h>
 #include <pic.h>
 #include <clock.h>
-#include <ram.h>
 #include <allocator.h>
+#include <vm.h>
 
 void khalt(){
     while(1){
@@ -25,8 +25,12 @@ void kmain(uint32_t* arg){
     init_clk();
     init_kbd();
     init_idt();
-    init_ram((ram_layout_info_t*)(*(arg+1)),*arg); 
+    init_ram((ram_layout_info_t*)(*(arg+1)),*arg);
+    init_allocator();
+    init_paging();
     sti();
+    //void* p = kalloc(1);
+    //ram_print();
     
     khalt();
 }

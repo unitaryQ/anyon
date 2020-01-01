@@ -128,10 +128,14 @@ push fs
 push ds
 push gs
 
+mov eax, 0x10; kernel data segment
+mov ds, ax
+mov es, ax
+
 ; we'd better change code & data segment to ring0, but not now
 ; pointer to interrupt stack layout
 ;|gs|ds|fs|es|8 eflags|int code|err code|eip|cs <|esp|ss|>
-push esp 
+push esp ;esp is an arg
 call common_handler
 pop esp
 

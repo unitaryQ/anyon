@@ -7,6 +7,7 @@
 #define T_TRAP 0x0F
 #define T_INTR 0x0E 
 #define IDT_NUM 0x100
+#define GDT_NUM 0x05
 #define M_USR 0x03
 #define M_KER 0x00
 
@@ -37,7 +38,9 @@ typedef struct interrupt_stack_s{
 
 //idt table with 256 entries
 static idt_entry_t idt[IDT_NUM];
+static idt_entry_t gdt[GDT_NUM];
 static idt_info_t idt_i;
+static idt_info_t gdt_i;
 
 static inline void sti(){
     asm volatile("sti");

@@ -56,26 +56,28 @@ int init_ram(ram_layout_info_t* rli, uint32_t ktail){
     get_usable_ram(rli, &zone);
 
     uint32_t ram_size = zone.base_hi;
+    uint32_t page_num = ram_size / PAGESIZE;
     uint32_t zone_size = zone.length_lo; //free page number
-    uint32_t zone_base = (ALIGN_UP(zone.base_lo,PAGESIZE)) / PAGESIZE; 
-    uint32_t page_num = ram_size / PAGESIZE; 
+    uint32_t zone_base = (ALIGN_UP(zone.base_lo,PAGESIZE)) / PAGESIZE;  
 
-    //check usable zone length, maybe more strict 
     if(zone_size == 0){
-        goto failed;
+        return -1;
     }
 
+    //reserve space for page descriptor array
     ktail = (ALIGN_UP(ktail + page_num*sizeof(page_t),PAGESIZE));//update kernel tail
-    ktail = ktail >> PAGESHIFT;
     memset(page_map, sizeof(page_t)*page_num);
 
-    goto okay;
+    //reserve space for kernel page directory and page tables
+    //default support 128M ram for simplicity
+    if(ram_size > (1<<27)){
+        return -1;
+    }
+    total_page = page_num;
+    page_dir = ktail;
+    page_table_num = page_num >> 10;
+    ktail = (ktail >> PAGESHIFT) + 1 + page_table_num;
 
-    failed:
-    kprintln("ram init failed\n");
-    return -1;
-
-    okay:
     global_zone.fst_page = zone_base;
     global_zone.page_num = ALIGN_DOWN(zone_base + zone_size, MAXBUDDY);//align to max buddy
 
@@ -89,7 +91,6 @@ int init_ram(ram_layout_info_t* rli, uint32_t ktail){
     uint32_t max_buddy_num = global_zone.page_num / MAXBUDDY;
     uint32_t kernel_res_buddy = ktail > global_zone.fst_page ? (ALIGN_UP(ktail - global_zone.fst_page,MAXBUDDY))/MAXBUDDY : 0;
     global_zone.buddy_array[MAXORDER].free_num = max_buddy_num - kernel_res_buddy;
-
     //initialize every page in ram, if outside zone or in overlapped area of kernel and zone, set reserved
     uint32_t i;
     for (i = 0; i < page_num; i ++){
@@ -114,7 +115,7 @@ int init_ram(ram_layout_info_t* rli, uint32_t ktail){
 }
 
 page_t* alloc_pages(uint32_t num, zone_t* zone){
-    
+
     if(num > MAXBUDDY || num == 0){
         return NULL;
     }
@@ -159,7 +160,6 @@ page_t* alloc_pages(uint32_t num, zone_t* zone){
         return NULL;
     }
 }
-
 
 int free_pages(page_t* fp,zone_t* zone){
     

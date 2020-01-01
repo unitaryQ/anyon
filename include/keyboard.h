@@ -1,7 +1,7 @@
 #ifndef __KEYBOARD_H__
 #define __KEYBOARD_H__
 
-#include <utils.h>
+#include <types.h>
 
 #define KEY_BUF_LEN 0x400
 

@@ -54,6 +54,9 @@ typedef struct zone_s{
 
 zone_t global_zone;
 page_t* page_map;
+uint32_t total_page;
+uint32_t page_table_num;
+uint32_t page_dir;
 
 page_t* alloc_pages(uint32_t, zone_t*);
 int free_pages(page_t*,zone_t*);

@@ -1,8 +1,8 @@
 #include <allocator.h>
-#include <ram.h>
 #include <list.h>
 #include <utils.h>
 #include <stdio.h>
+#include <lock.h>
 
 void default_init_cache(ram_cache_t* rc){
     list_init(&rc->cache_list);
@@ -31,7 +31,7 @@ ram_cache_t* create_new_cache(uint32_t new_size){
 
 /*only alloc memory for kernel objects*/
 /*we have already have a sizeof(ram_cache_t) cache at the beginning*/
-void* kalloc(uint32_t size){
+void* _kalloc(uint32_t size){
 
     if(size > SLAB_MAX || size == 0){
         return NULL;
@@ -112,7 +112,14 @@ void* kalloc(uint32_t size){
     return obj;
 }
 
-int kfree(void* object){
+void* kalloc(uint32_t size){
+    uint8_t x = lock_interrupt();
+    void* p = _kalloc(size);
+    unlock_interrupt(x);
+    return p;
+}
+
+int _kfree(void* object){
 
     uint32_t objpaddr = ALIGN_DOWN((uint32_t)object,PAGESIZE);
 
@@ -143,6 +150,11 @@ int kfree(void* object){
         slb->bitmap[offid] = slb->fst_slice;
         slb->fst_slice = offid;
     }
+}
 
-    
+int kfree(void* object){
+    uint8_t x = lock_interrupt();
+    int r = _kfree(object);
+    unlock_interrupt(x);
+    return r;
 }

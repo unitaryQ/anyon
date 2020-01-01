@@ -28,11 +28,11 @@ detect memory layout...OK
 
 continuous pages allocate...OK
 
-kernel objects allocate
+kernel objects allocate...OK
 
-virtual memory
+start paging...OK
 
-kernel lock 
+kernel lock
 
 #### process
 

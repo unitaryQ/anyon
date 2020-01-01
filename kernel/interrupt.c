@@ -9,9 +9,22 @@ void make_idt_entry(idt_entry_t* entry, uint32_t handler, uint8_t DPL, uint8_t P
     entry->hi = (handler & 0xFFFF0000) + ((P & 0x1) << 15) + ((DPL & (0x3)) << 13) + ((type & 0xF) << 8);
 }
 
+void make_gdt_entry(idt_entry_t* entry, uint32_t base, uint32_t limit,uint8_t access_byte, uint8_t flag){
+    entry->lo = ((base & 0xFFFF) << 16) + (limit & 0xFFFF);
+    entry->hi = (base & 0xFF000000) + ((base & 0xFF0000) >> 16) + (limit & 0xF0000) + (access_byte << 8) + ((0xF & flag) << 20);
+}
+
 static inline void lidt(uint32_t addr){
     asm volatile(
         "lidt (%%eax)"
+        :
+        :"a"(addr)
+    );
+}
+
+static inline void lgdt(uint32_t addr){
+    asm volatile(
+        "lgdt (%%eax)"
         :
         :"a"(addr)
     );
@@ -29,11 +42,22 @@ void init_idt(){
 
     //syscall
     make_idt_entry(&idt[128],(intr_lst[48]),M_USR,1,T_TRAP);
-
     idt_i.len = IDT_NUM*sizeof(idt_entry_t);
     idt_i.off = (uint32_t)(&idt[0]);
     lidt((uint32_t)(&idt_i));
+
+    
+    memset(gdt,sizeof(idt_entry_t)*GDT_NUM);
+    make_gdt_entry(&gdt[1],0,0xFFFFF,0x9a,0xc);//kernel code
+    make_gdt_entry(&gdt[2],0,0xFFFFF,0x92,0xc);//kernel data
+    make_gdt_entry(&gdt[3],0,0xFFFFF,0xfa,0xc);//user code
+    make_gdt_entry(&gdt[4],0,0xFFFFF,0xf2,0xc);//user data
+
+    gdt_i.len = GDT_NUM*sizeof(idt_entry_t);
+    gdt_i.off = (uint32_t)(&gdt[0]);
+    lgdt((uint32_t)(&gdt_i));
 }
+
 void common_handler(interrupt_stack_t* is){
     
     uint32_t c = is->int_code;
