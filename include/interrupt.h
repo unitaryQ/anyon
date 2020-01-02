@@ -41,6 +41,8 @@ static idt_entry_t idt[IDT_NUM];
 static idt_entry_t gdt[GDT_NUM];
 static idt_info_t idt_i;
 static idt_info_t gdt_i;
+static inline void sti()__attribute__((always_inline));
+static inline void cli()__attribute__((always_inline));
 
 static inline void sti(){
     asm volatile("sti");

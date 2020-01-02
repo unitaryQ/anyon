@@ -31,12 +31,14 @@ ram_cache_t* create_new_cache(uint32_t new_size){
 
 /*only alloc memory for kernel objects*/
 /*we have already have a sizeof(ram_cache_t) cache at the beginning*/
-void* _kalloc(uint32_t size){
+void* kalloc(uint32_t size){
 
     if(size > SLAB_MAX || size == 0){
         return NULL;
     }
     
+    uint8_t ilock = lock_interrupt();
+
     uint32_t fit_size = size > SLAB_UNIT ? (1<<clog(size)) : SLAB_UNIT; 
 
     //find a fit cache
@@ -55,6 +57,7 @@ void* _kalloc(uint32_t size){
     ram_cache_t* newrc = create_new_cache(fit_size);
     lc = &newrc->cache_list;
     if(newrc == NULL){
+        unlock_interrupt(ilock);
         return NULL;
     }
     
@@ -66,6 +69,7 @@ void* _kalloc(uint32_t size){
     if(fitcache->slab_list.free_object_num == 0){
         page_t* slabpage = alloc_pages(fitcache->slab_size,&global_zone);
         if(slabpage == NULL){
+            unlock_interrupt(ilock);
             return NULL;
         }
 
@@ -109,23 +113,19 @@ void* _kalloc(uint32_t size){
         fitcache->slab_list.full_slab_num ++ ;
     }
 
+    unlock_interrupt(ilock);
     return obj;
 }
 
-void* kalloc(uint32_t size){
-    uint8_t x = lock_interrupt();
-    void* p = _kalloc(size);
-    unlock_interrupt(x);
-    return p;
-}
-
-int _kfree(void* object){
+int kfree(void* object){
 
     uint32_t objpaddr = ALIGN_DOWN((uint32_t)object,PAGESIZE);
+    uint8_t ilock = lock_interrupt();
 
     //default page size is 1, just check if this page is for slab
     page_t* objpage = page_map + (objpaddr>>PAGESHIFT);
     if(objpage->flags & PG_SLAB_USED == 0){
+        unlock_interrupt(ilock);
         return -1;
     }
 
@@ -135,6 +135,7 @@ int _kfree(void* object){
     uint32_t offid = off / cache->object_size;
     if(off % cache->object_size != 0 || offid < slb->slice_off || slb->bitmap[offid] != ALLOC_MAGIC){
         // not aligned or aligned to slab header or the obj is free. 
+        unlock_interrupt(ilock);
         return -1;
     }
 
@@ -150,11 +151,7 @@ int _kfree(void* object){
         slb->bitmap[offid] = slb->fst_slice;
         slb->fst_slice = offid;
     }
-}
 
-int kfree(void* object){
-    uint8_t x = lock_interrupt();
-    int r = _kfree(object);
-    unlock_interrupt(x);
-    return r;
+    unlock_interrupt(ilock);
+    return 0;
 }

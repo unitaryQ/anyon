@@ -4,6 +4,9 @@
 #include <keyboard.h>
 #include <clock.h>
 
+inline void lidt(uint32_t)__attribute__((always_inline));
+inline void lgdt(uint32_t)__attribute__((always_inline));
+
 void make_idt_entry(idt_entry_t* entry, uint32_t handler, uint8_t DPL, uint8_t P, uint8_t type){
     entry->lo = (SEG_SEL << 16) + (handler & 0xFFFF);
     entry->hi = (handler & 0xFFFF0000) + ((P & 0x1) << 15) + ((DPL & (0x3)) << 13) + ((type & 0xF) << 8);
@@ -14,7 +17,7 @@ void make_gdt_entry(idt_entry_t* entry, uint32_t base, uint32_t limit,uint8_t ac
     entry->hi = (base & 0xFF000000) + ((base & 0xFF0000) >> 16) + (limit & 0xF0000) + (access_byte << 8) + ((0xF & flag) << 20);
 }
 
-static inline void lidt(uint32_t addr){
+inline void lidt(uint32_t addr){
     asm volatile(
         "lidt (%%eax)"
         :
@@ -22,7 +25,7 @@ static inline void lidt(uint32_t addr){
     );
 }
 
-static inline void lgdt(uint32_t addr){
+inline void lgdt(uint32_t addr){
     asm volatile(
         "lgdt (%%eax)"
         :
