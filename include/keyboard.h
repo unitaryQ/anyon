@@ -11,8 +11,11 @@ typedef struct key_buf_s{
     uint32_t relative;
 }key_buf_t;
 
-
-static key_buf_t keybuf;
+typedef struct kbd_flag_s{
+    uint8_t _shift;
+    uint8_t _cap;
+    uint8_t _E0;
+}kbd_flag_t;
 
 #define P_ESC   0x01
 #define P_LCTRL 0x1D
@@ -22,27 +25,6 @@ static key_buf_t keybuf;
 #define P_CAPLOCK 0x3A
 #define P_NUMLOCK 0x45
 #define P_SCROLLLOCK 0x46
-
-//keyboard for US-map
-static uint8_t key_map[0x80] = {
-     0,  0, '1','2','3','4','5','6','7','8','9','0','-','=','\b','\t', //0xF
-    'q','w','e','r','t','y','u','i','o','p','[',']','\n',0, 'a', 's', //0x1F
-    'd','f','g','h','j','k','l',';','\'','`',0, '\\','z','x','c','v', //0x2F
-    'b','n','m',',','.','/', 0,  0,  0,' ',  0,  0,  0,  0,   0,  0, //0x3F
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,   0,  0, //0x4F
-};
-
-static uint8_t key_shift_map[0x80] = {
-     0,  0, '!','@','#','$','%','^','&','*','(',')','_','+','\b','\t', //0xF
-    'q','w','e','r','t','y','u','i','o','p','{','}','\n',0, 'a', 's', //0x1F
-    'd','f','g','h','j','k','l',';','\"','`',0, '|','z','x','c','v', //0x2F
-    'b','n','m','<','>','?', 0,  0,  0,' ',  0,  0,  0,  0,   0,  0, //0x3F
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,   0,  0, //0x4F
-};
-
-//logical circular queue for saving keys
-//if overlapped, ignore it and just read
-static uint8_t cq[KEY_BUF_LEN]; 
 
 void init_kbd();
 void kbd_handler();

@@ -4,6 +4,10 @@
 #include <stdio.h>
 #include <lock.h>
 
+//cache0 is the cache of struct ram_cache_s
+static ram_cache_t cache0;
+static int cache_num;
+
 void default_init_cache(ram_cache_t* rc){
     list_init(&rc->cache_list);
     list_init(&rc->slab_list.partial_list);

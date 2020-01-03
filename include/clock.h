@@ -10,8 +10,8 @@
 #define FREQ 1193182 //clock generator frequency ;with bochs, in configure add sync=realtime
 #define DIVD 1000 //1ms every tic
 
-static uint32_t clk_tick;
-static uint32_t sys_time;
+uint32_t clk_tick;
+uint32_t sys_time;
 
 void init_clk(); 
 void clk_handler();

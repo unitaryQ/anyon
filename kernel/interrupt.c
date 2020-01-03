@@ -4,8 +4,30 @@
 #include <keyboard.h>
 #include <clock.h>
 
-inline void lidt(uint32_t)__attribute__((always_inline));
-inline void lgdt(uint32_t)__attribute__((always_inline));
+//idt table with 256 entries
+static idt_entry_t idt[IDT_NUM];
+static idt_entry_t gdt[GDT_NUM];
+static idt_info_t idt_i;
+static idt_info_t gdt_i;
+
+static inline void lidt(uint32_t)__attribute__((always_inline));
+static inline void lgdt(uint32_t)__attribute__((always_inline));
+
+static inline void lidt(uint32_t addr){
+    asm volatile(
+        "lidt (%%eax)"
+        :
+        :"a"(addr)
+    );
+}
+
+static inline void lgdt(uint32_t addr){
+    asm volatile(
+        "lgdt (%%eax)"
+        :
+        :"a"(addr)
+    );
+}
 
 void make_idt_entry(idt_entry_t* entry, uint32_t handler, uint8_t DPL, uint8_t P, uint8_t type){
     entry->lo = (SEG_SEL << 16) + (handler & 0xFFFF);
@@ -15,22 +37,6 @@ void make_idt_entry(idt_entry_t* entry, uint32_t handler, uint8_t DPL, uint8_t P
 void make_gdt_entry(idt_entry_t* entry, uint32_t base, uint32_t limit,uint8_t access_byte, uint8_t flag){
     entry->lo = ((base & 0xFFFF) << 16) + (limit & 0xFFFF);
     entry->hi = (base & 0xFF000000) + ((base & 0xFF0000) >> 16) + (limit & 0xF0000) + (access_byte << 8) + ((0xF & flag) << 20);
-}
-
-inline void lidt(uint32_t addr){
-    asm volatile(
-        "lidt (%%eax)"
-        :
-        :"a"(addr)
-    );
-}
-
-inline void lgdt(uint32_t addr){
-    asm volatile(
-        "lgdt (%%eax)"
-        :
-        :"a"(addr)
-    );
 }
 
 void init_idt(){

@@ -27,10 +27,6 @@ typedef struct slab_s{
     uint32_t bitmap[];
 }slab_t;
 
-//cache0 is the cache of struct ram_cache_s
-static ram_cache_t cache0;
-static int cache_num;
-
 #define SLAB_UNIT 0x20
 #define SLAB_MAX  0x400
 #define DEFAULT_SLAB_PAGE 0x01

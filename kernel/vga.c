@@ -1,6 +1,10 @@
 #include <utils.h>
 #include <vga.h>
 #include <stdio.h>
+#include <types.h>
+
+static uint16_t cur_x;
+static uint16_t cur_y;
 
 void __vga_putc(char c){
     uint16_t* p = (uint16_t*)VGA + cur_x + cur_y*80;

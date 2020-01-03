@@ -2,7 +2,11 @@
 #define __LOCK_H__ 
 
 #include <interrupt.h>
+
 #define IF_BIT 0x0200
+
+static inline uint8_t lock_interrupt();
+static inline void unlock_interrupt(uint8_t);
 
 //return 1 means need reset IF, 0 means need not
 static inline uint8_t lock_interrupt(){
@@ -28,5 +32,4 @@ static inline void unlock_interrupt(uint8_t IF){
         sti();
     }
 }
-
 #endif 

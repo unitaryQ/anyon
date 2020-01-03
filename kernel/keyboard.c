@@ -2,16 +2,31 @@
 #include <stdio.h>
 #include <pic.h>
 
-typedef struct kbd_flag_s{
-    uint8_t _shift;
-    uint8_t _cap;
-    uint8_t _E0;
-}kbd_flag_t;
+//keyboard for US-map
+static uint8_t key_map[0x80] = {
+     0,  0, '1','2','3','4','5','6','7','8','9','0','-','=','\b','\t', //0xF
+    'q','w','e','r','t','y','u','i','o','p','[',']','\n',0, 'a', 's', //0x1F
+    'd','f','g','h','j','k','l',';','\'','`',0, '\\','z','x','c','v', //0x2F
+    'b','n','m',',','.','/', 0,  0,  0,' ',  0,  0,  0,  0,   0,  0, //0x3F
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,   0,  0, //0x4F
+};
 
-kbd_flag_t kbdflg;
+static uint8_t key_shift_map[0x80] = {
+     0,  0, '!','@','#','$','%','^','&','*','(',')','_','+','\b','\t', //0xF
+    'q','w','e','r','t','y','u','i','o','p','{','}','\n',0, 'a', 's', //0x1F
+    'd','f','g','h','j','k','l',';','\"','`',0, '|','z','x','c','v', //0x2F
+    'b','n','m','<','>','?', 0,  0,  0,' ',  0,  0,  0,  0,   0,  0, //0x3F
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,   0,  0, //0x4F
+};
+
+//logical circular queue for saving keys
+//if overlapped, ignore it and just read
+//controlled by keybuf struct
+static key_buf_t keybuf;
+static uint8_t cq[KEY_BUF_LEN]; 
+static kbd_flag_t kbdflg;
 
 // write key to the buf
-// when having TTY, the key should be put to IO file attached to it
 void kbd_write(uint8_t key){
 
     cq[keybuf.tail] = key;

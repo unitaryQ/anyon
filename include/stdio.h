@@ -4,5 +4,4 @@
 #include <types.h>
 
 void kprintln(char*, ...);
-
 #endif
