@@ -33,8 +33,8 @@ ram_cache_t* create_new_cache(uint32_t new_size){
     return rc;
 }
 
-/*only alloc memory for kernel objects*/
-/*we have already have a sizeof(ram_cache_t) cache at the beginning*/
+//only alloc memory for kernel objects
+//we have already have a sizeof(ram_cache_t) cache at the beginning
 void* kalloc(uint32_t size){
 
     if(size > SLAB_MAX || size == 0){
@@ -123,6 +123,10 @@ void* kalloc(uint32_t size){
 
 int kfree(void* object){
 
+    if(object == NULL){
+        return -1;
+    }
+
     uint32_t objpaddr = ALIGN_DOWN((uint32_t)object,PAGESIZE);
     uint8_t ilock = lock_interrupt();
 
@@ -158,4 +162,34 @@ int kfree(void* object){
 
     unlock_interrupt(ilock);
     return 0;
+}
+
+uint32_t kalloc_pages(uint32_t num){
+
+    uint8_t ilock = lock_interrupt();
+    page_t* p = alloc_pages(num,&global_zone);
+    if(p == NULL){
+        unlock_interrupt(ilock);
+        return 0;
+    }
+    p->ref ++ ;
+    unlock_interrupt(ilock);
+    return (page_addr(p));
+}
+
+int kfree_pages(uint32_t addr){
+
+    if((addr & 0xFFF) != 0 || addr == 0){
+        return -1;
+    }
+    
+    page_t* p = page_map + (addr >> PAGESHIFT);
+    uint8_t ilock = lock_interrupt();
+    p->ref --;
+    int ret = free_pages(p,&global_zone);
+    if(ret == -1){
+        p->ref ++;
+    }
+    unlock_interrupt(ilock);
+    return ret;
 }

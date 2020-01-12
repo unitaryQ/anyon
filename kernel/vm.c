@@ -5,12 +5,7 @@
 #include <lock.h>
 
 void enable_paging(uint32_t pd){
-    asm volatile(
-        "movl %0, %%cr3"
-        :
-        :"a"(pd)
-    );
-
+    lcr3(pd);
     asm volatile("movl %cr0, %eax");
     asm volatile("orl $0x80000001, %eax");
     asm volatile("movl %eax, %cr0");
@@ -22,12 +17,12 @@ void init_paging(){
     int i;
     for(i = 0; i < page_table_num; i++){
         uint32_t ptaddr = page_dir + PAGESIZE*(i+1);
-        *((uint32_t*)page_dir + i) = ptaddr + 0x03;
+        *((uint32_t*)page_dir + i) = ptaddr | PE_W | PE_P;
     }
 
     uint32_t* fst_pt = (uint32_t*)(page_dir + PAGESIZE);
     for(i = 0; i< total_page; i++){
-        *(fst_pt + i) = (i<<PAGESHIFT) + 0x03;
+        *(fst_pt + i) = (i<<PAGESHIFT) | PE_W | PE_P;
     }
 
     enable_paging((uint32_t)page_dir);
@@ -35,8 +30,11 @@ void init_paging(){
 
 virtual_zone_t* create_virtual_zone(){
     virtual_zone_t* vz = (virtual_zone_t*)kalloc(sizeof(virtual_zone_t));
-    list_init(&vz->va_list);
-    vz->va_num = 0;
+    if(vz != NULL){
+        list_init(&vz->va_list);
+        vz->count = 0;
+        vz->va_num = 0;
+    }
     return vz;//maybe NULL
 }
 
@@ -47,11 +45,13 @@ virtual_area_t* create_virtual_area(uint32_t beg, uint32_t len, uint32_t flags){
     }
 
     virtual_area_t* va = (virtual_area_t*)kalloc(sizeof(virtual_area_t));
-    va->start = beg;
-    va->length = len;
-    va->end = beg + len;
-    va->flags = flags;
-    list_init(&va->link);
+    if(va != NULL){
+        va->start = beg;
+        va->length = len;
+        va->end = beg + len;
+        va->flags = flags;
+        list_init(&va->link);
+    }
     return va; //maybe NULL
 }
 

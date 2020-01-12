@@ -29,6 +29,7 @@ static inline uint8_t inb(uint16_t port){
 
 void memset(void*, uint32_t);
 void memmove(void*, void*, uint32_t);
+void memcopy(void*, void*, uint32_t);
 uint32_t clog(uint32_t);
 
 #define ALIGN_UP(data, algn) (((data) % (algn)) == 0? (data) : ((data) / (algn)) * (algn) + (algn))

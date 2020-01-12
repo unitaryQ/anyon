@@ -163,8 +163,8 @@ page_t* alloc_pages(uint32_t num, zone_t* zone){
 
 int free_pages(page_t* fp,zone_t* zone){
     
-    //check if this is a buddy's first page
-    if((fp->flags & PG_BUDDYH) == 0){
+    //check if this is a buddy's first page or is allocated
+    if((fp->flags & PG_BUDDYH) == 0 || (fp->flags & PG_BUDDY_USED) == 0){
         return -1;
     }
 

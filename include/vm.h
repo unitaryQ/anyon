@@ -9,8 +9,14 @@
 #define VA_STACK    0x08
 #define VA_DYNAMIC  0x10
 #define VA_SHARE    0x20
-
 #define VADDR_MAX   0xFFF00000
+
+#define PE_U 0x04
+#define PE_W 0x02
+#define PE_P 0x01
+
+#define PDESHIFT 22
+#define PTESHIFT 12
 
 typedef struct virtual_area_s{
     list_t link;
@@ -23,7 +29,17 @@ typedef struct virtual_area_s{
 typedef struct virtual_zone_s{
     list_t va_list; // init node of virtual area list
     uint32_t va_num;
+    uint32_t count;
 }virtual_zone_t;
+
+static inline void lcr3(uint32_t)__attribute__((always_inline));
+static inline void lcr3(uint32_t addr){
+    asm volatile(
+        "movl %0, %%cr3"
+        :
+        :"a"(addr)
+    );
+}
 
 void init_paging();
 virtual_zone_t* create_virtual_zone();

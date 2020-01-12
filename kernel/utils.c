@@ -47,3 +47,13 @@ uint32_t clog(uint32_t x){
     }
     return 0;
 }
+
+void memcopy(void* dst, void* src, uint32_t len){
+    //maybe overlapping
+    uint8_t* p =  (uint8_t*) dst;
+    uint8_t* q =  (uint8_t*) src;
+    int i;
+    for(i = 0; i < len; i++){
+        *(p + i) = *(q + i);
+    }
+}

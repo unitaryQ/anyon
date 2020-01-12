@@ -12,6 +12,7 @@ static idt_info_t gdt_i;
 
 static inline void lidt(uint32_t)__attribute__((always_inline));
 static inline void lgdt(uint32_t)__attribute__((always_inline));
+static inline void ltr(uint16_t) __attribute__((always_inline));
 
 static inline void lidt(uint32_t addr){
     asm volatile(
@@ -26,6 +27,14 @@ static inline void lgdt(uint32_t addr){
         "lgdt (%%eax)"
         :
         :"a"(addr)
+    );
+}
+
+static inline void ltr(uint16_t index){
+    asm volatile(
+        "ltr %0"
+        :
+        :"r"(index)
     );
 }
 
@@ -54,17 +63,21 @@ void init_idt(){
     idt_i.len = IDT_NUM*sizeof(idt_entry_t);
     idt_i.off = (uint32_t)(&idt[0]);
     lidt((uint32_t)(&idt_i));
-
     
+    //gdt
     memset(gdt,sizeof(idt_entry_t)*GDT_NUM);
     make_gdt_entry(&gdt[1],0,0xFFFFF,0x9a,0xc);//kernel code
     make_gdt_entry(&gdt[2],0,0xFFFFF,0x92,0xc);//kernel data
     make_gdt_entry(&gdt[3],0,0xFFFFF,0xfa,0xc);//user code
     make_gdt_entry(&gdt[4],0,0xFFFFF,0xf2,0xc);//user data
+    make_gdt_entry(&gdt[5],(uint32_t)(&tss),sizeof(tss_t),0x89,0x4); //tss
 
     gdt_i.len = GDT_NUM*sizeof(idt_entry_t);
     gdt_i.off = (uint32_t)(&gdt[0]);
     lgdt((uint32_t)(&gdt_i));
+
+    //load tss
+    ltr(SEG_TSS);
 }
 
 void common_handler(interrupt_stack_t* is){
@@ -81,7 +94,8 @@ void common_handler(interrupt_stack_t* is){
             break;
         }
         default:{
-            //kprintln("unknown interrupt %d\n",c);
+            kprintln("unknown interrupt %d code %d\n",c,is->err_code);
+            while(1){}
             break;
         }
     }

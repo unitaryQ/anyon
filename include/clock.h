@@ -9,6 +9,7 @@
 
 #define FREQ 1193182 //clock generator frequency ;with bochs, in configure add sync=realtime
 #define DIVD 1000 //1ms every tic
+#define SCHEDULE_PIECE 500 //scheduler called intervals
 
 uint32_t clk_tick;
 uint32_t sys_time;

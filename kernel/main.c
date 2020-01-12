@@ -7,10 +7,11 @@
 #include <interrupt.h>
 #include <allocator.h>
 #include <vm.h>
+#include <process.h>
+#include <scheduler.h>
 
 void khalt(){
-    while(1){
-    }
+    while(1){}
 }
 
 void kmain(uint32_t* arg){
@@ -26,6 +27,7 @@ void kmain(uint32_t* arg){
     init_ram((ram_layout_info_t*)(*(arg+1)),*arg);
     init_allocator();
     init_paging();
+    kprintln("pid = %d\n",init_kernel_thread());
     sti();
 
     khalt();

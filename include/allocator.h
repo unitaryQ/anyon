@@ -35,4 +35,6 @@ typedef struct slab_s{
 void init_allocator();
 void* kalloc(uint32_t);
 int kfree(void*);
+uint32_t kalloc_pages(uint32_t);
+int kfree_pages(uint32_t);
 #endif

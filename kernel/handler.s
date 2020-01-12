@@ -139,6 +139,7 @@ push esp ;esp is an arg
 call common_handler
 pop esp
 
+lift_ret:
 pop gs
 pop ds
 pop fs
@@ -146,3 +147,16 @@ pop es
 popad
 add esp, 8
 iret
+
+[global lift_kernel_thread]
+
+;|interrupt_stack_t
+;|pcb arg
+;|dummy eip
+;|dummy ebp <- ebp
+;|...
+;|kernel_to_user caller eip
+lift_kernel_thread:
+mov esp, ebp
+add esp, 0x0c ;set esp to the man-made interrupt stack
+jmp lift_ret

@@ -32,7 +32,7 @@ kernel objects allocate...OK
 
 start paging...OK
 
-kernel lock
+virtual ram area...OK
 
 #### process
 
